@@ -1,25 +1,44 @@
-# How It Works
+# 🎓 AI Learning Platform: System Architecture
 
-## System Architecture
+A sophisticated, state-based AI tutoring system designed for personalized education, featuring real-time interaction and deep learning analytics.
 
-The system is built on a microservices architecture, which allows for flexibility and scalability. Each component of the system is designed to handle specific tasks independently.
+---
 
-### Components:
-1. **Frontend Interface**: This is the user-facing part of the application where users can interact with the features of the system. It is built using React.js.
+## 🏗️ Core Components
 
-2. **Backend Services**: The backend runs on Node.js, providing APIs for the frontend. It handles all the business logic and database interactions.
+### 👤 User Management (`database.py`)
+The foundation of the personalized experience.
+* **Authentication:** Secure registration and login and store in localstorage of user for easy future login.
+* **Budgeting:** Granular token usage tracking to manage API overhead and costs.
 
-3. **Database**: A NoSQL database (MongoDB) is used for storing user data and application state.
+### 💬 Chat System (`server.py`)
+The primary interface for student interaction.
+* **Dual Modes:** Dedicated **Study Mode** (guided learning) and **Test Mode** (active recall).
+* **Persistence:** Thread-based conversation history for seamless context retention.
 
-4. **Authentication Service**: A dedicated service handles user authentication and authorization using JWT (JSON Web Tokens).
 
-5. **API Gateway**: This serves as a single entry point for all client requests, routing them to the appropriate backend service. 
+### 🧠 LLM Pipeline (`llm.py`)
+A robust, state-based workflow utilizing a 4-node architecture:
+1.  **Format:** Pre-processes input and structures the initial state.
+2.  **Agent:** The central brain determining the best pedagogical approach.
+3.  **Tools:** Dynamic execution of external functions (Flashcards, MCQs, etc.).
+4.  **Finalize:** Polishes the output for the user and updates the history.
 
-## Functionality
+---
 
-- **User Registration and Authentication**: Users can register, log in, and manage their profiles.
-- **Data Processing**: The system processes input data and returns output based on user queries.
-- **Real-time Notifications**: Users receive real-time updates about changes in their data or system status.
-- **Admin Dashboard**: An admin interface is available for managing users and monitoring system performance.
+## 🛠️ Advanced Learning Features
 
-Everything runs in a cloud environment to ensure high availability and reliability. The system is also monitored continuously to mitigate downtime and optimize performance.
+| Feature | Description |
+| :--- | :--- |
+| **📄 PDF Analysis** | Extract and synthesize content from uploaded documents for contextual study. |
+| **🃏 Flashcards** | AI-generated digital cards optimized for spaced repetition. |
+| **📝 MCQ Generation** | Automated multiple-choice questions for instant self-assessment. |
+| **📊 Mermaid Diagrams** | Visual learning via dynamically generated flowcharts and mind maps. |
+| **🔊 Voice Output** | It generates voice for learning while doing other work. |
+
+---
+
+## 📈 Notes & Resource Management
+* **Personalized Study:** User can upload name ,dates of exam or test and about like weakness , strength.
+* **Usage Analytics:** Real-time dashboards for token consumption and API costs.
+* **File Management:** Per-conversation file organization to keep learning materials structured.
