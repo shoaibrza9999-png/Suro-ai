@@ -1,6 +1,12 @@
 # 🎓 AI Learning Platform: System Architecture
 
 A sophisticated, state-based AI tutoring system designed for personalized education, featuring real-time interaction and deep learning analytics.
+username :9
+password :9
+
+| name | link |
+| :--- | :--- |
+| tryout link |[https://h-1--rare80801.replit.app/](https://h-1--rare80801.replit.app/) |
 
 ---
 
