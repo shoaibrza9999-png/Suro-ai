@@ -1,12 +1,20 @@
-# 🎓 AI Learning Platform: System Architecture
-
-A sophisticated, state-based AI tutoring system designed for personalized education, featuring real-time interaction and deep learning analytics.
-
 | Item | Value |
 | :--- | :--- |
 | **Username** | 9 |
 | **Password** | 9 |
 | **Tryout Link** | [https://h-1--rare80801.replit.app/](https://h-1--rare80801.replit.app/) |
+
+-----------------------------------
+Name and School: shoaib - RSM public school.
+Date: 1/21/26
+Project Name: CalorieAI
+Description: Turn you boaring study in interactive flashcards,charts,etc by Ai agent.
+-----------------------------------
+
+# 🎓 AI Learning Platform: System Architecture
+
+A sophisticated, state-based AI tutoring system designed for personalized education, featuring real-time interaction and deep learning analytics.
+
 
 ---
 
