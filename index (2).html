@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Guide AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+      ],
+      throwOnError : false
+    });">
+</script>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap');
+        
+        /* Global Reset & Body Lock */
+        body { 
+            font-family: 'Google Sans', sans-serif; 
+            max-width: 100vw; 
+            overflow-x: hidden; /* Prevent body horizontal scroll */
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #131314; }
+        ::-webkit-scrollbar-thumb { background: #333537; border-radius: 10px; }
+
+        /* Sidebar & UI Elements */
+        .thread-active { background-color: #333537 !important; border-left: 4px solid #8b5cf6; }
+        .tool-chip.active { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
+        .mode-btn.active { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
+        .tab-active { border-bottom: 2px solid #8b5cf6; color: #8b5cf6; }
+
+        /* Gemini-Style Prose Container */
+        .prose { color: #e3e3e3; line-height: 1.6; }
+
+        /* Code & Pre Box Styling (Scrollable) */
+        .prose pre { 
+            overflow-x: auto; 
+            background-color: #1e1f20 !important; 
+            padding: 1rem; 
+            border-radius: 0.75rem; 
+            border: 1px solid #333537;
+            margin: 1rem 0;
+            white-space: pre; /* Ensure code doesn't wrap unless specified */
+        }
+
+        /* Table Styling (Gemini Style & Scrollable) */
+        .table-container {
+            width: 100%;
+            overflow-x: auto; /* Enable horizontal scroll for wide tables */
+            margin: 1rem 0;
+            border-radius: 0.75rem;
+            border: 1px solid #444746;
+        }
+
+        .prose table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            min-width: 500px; /* Forces scroll on small containers */
+            text-align: left;
+        }
+
+        .prose th { 
+            background-color: #2d2f31; 
+            color: #a8c7fa; 
+            padding: 12px 16px; 
+            font-weight: 500;
+        }
+
+        .prose td { 
+            padding: 12px 16px; 
+            border-top: 1px solid #444746; 
+            background-color: transparent;
+        }
+
+        .prose tr:hover td {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        /* Flashcards & Misc */
+        .flashcard { perspective: 1000px; cursor: pointer; }
+        .flashcard-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { backface-visibility: hidden; position: absolute; inset: 0; }
+        .flashcard-back { transform: rotateY(180deg); }
+        .modal-overlay { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="bg-[#131314] text-[#e3e3e3] h-screen flex overflow-hidden">
+
+    <div id="auth-overlay" class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center">
+        <div class="bg-[#1e1f20] p-8 rounded-3xl w-full max-w-md border border-[#333537] text-center">
+            <div class="text-4xl mb-4">📚</div>
+            <h2 id="auth-title" class="text-2xl font-medium mb-6">Login to Study Guide</h2>
+            <input type="text" id="username" placeholder="Username" class="w-full bg-[#131314] border border-[#444] rounded-xl p-3 mb-4 outline-none focus:border-[#8b5cf6]">
+            <input type="password" id="password" placeholder="Password" class="w-full bg-[#131314] border border-[#444] rounded-xl p-3 mb-6 outline-none focus:border-[#8b5cf6]">
+            <button onclick="handleAuth()" class="w-full bg-[#8b5cf6] text-white font-bold py-3 rounded-full hover:bg-purple-500">Login</button>
+            <p onclick="toggleAuthMode()" class="mt-4 text-sm text-gray-400 cursor-pointer hover:underline">New user? Register here</p>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="fixed inset-0 modal-overlay z-[90] hidden flex items-center justify-center overflow-y-auto py-8">
+        <div class="bg-[#1e1f20] p-6 rounded-2xl w-full max-w-lg border border-[#333537] m-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-medium">Profile</h3>
+                <button onclick="closeProfileModal()" class="text-gray-400 hover:text-white">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            
+            <div class="flex gap-2 mb-4 border-b border-[#333537] flex-wrap">
+                <button onclick="showProfileTab('info')" id="tab-info" class="px-4 py-2 tab-active">Info</button>
+                <button onclick="showProfileTab('calendar')" id="tab-calendar" class="px-4 py-2 text-gray-400">Calendar</button>
+                <button onclick="showProfileTab('usage')" id="tab-usage" class="px-4 py-2 text-gray-400">Usage</button>
+            </div>
+            
+            <div id="profile-info" class="space-y-4">
+                <input type="text" id="profile-name" placeholder="Display Name" class="w-full bg-[#131314] border border-[#444] rounded-xl p-3 outline-none">
+                <textarea id="profile-about" placeholder="About you..." rows="2" class="w-full bg-[#131314] border border-[#444] rounded-xl p-3 outline-none"></textarea>
+                <input type="text" id="profile-strengths" placeholder="Subjects you're strong in..." class="w-full bg-[#131314] border border-[#444] rounded-xl p-3 outline-none">
+                <input type="text" id="profile-weaknesses" placeholder="Subjects to improve..." class="w-full bg-[#131314] border border-[#444] rounded-xl p-3 outline-none">
+                <button onclick="saveProfile()" class="w-full bg-[#8b5cf6] text-white py-2 rounded-full hover:bg-purple-500">Save Profile</button>
+            </div>
+            
+            <div id="profile-calendar" class="hidden space-y-4">
+                <div class="flex flex-col gap-2">
+                    <div class="flex gap-2">
+                        <input type="date" id="note-date" class="flex-1 bg-[#131314] border border-[#444] rounded-xl p-3 outline-none">
+                        <input type="text" id="note-text" placeholder="Add note (e.g., Math test)" class="flex-1 bg-[#131314] border border-[#444] rounded-xl p-3 outline-none">
+                    </div>
+                    <button onclick="addNote()" class="w-full px-4 py-2 bg-[#8b5cf6] rounded-xl text-white">Add Note</button>
+                </div>
+                <div id="notes-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+            </div>
+            
+            <div id="profile-usage" class="hidden">
+                <div class="bg-[#131314] rounded-xl p-4 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Total Tokens Used</span>
+                        <span id="total-tokens" class="font-medium">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Estimated Cost ($2/1M tokens)</span>
+                        <span id="total-cost" class="font-medium text-green-400">$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tools-modal" class="fixed inset-0 modal-overlay z-[80] hidden flex items-center justify-center">
+        <div class="bg-[#1e1f20] p-6 rounded-2xl w-full max-w-sm border border-[#333537] m-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium">Select Tools</h3>
+                <button onclick="closeToolsModal()" class="text-gray-400 hover:text-white">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <p class="text-gray-400 text-sm mb-4">Click to enable/disable tools:</p>
+            <div id="tools-list" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <div id="rename-modal" class="fixed inset-0 modal-overlay z-[90] hidden flex items-center justify-center">
+        <div class="bg-[#1e1f20] p-6 rounded-2xl w-full max-w-sm border border-[#333537] m-4">
+            <h3 class="text-lg font-medium mb-4">Rename Chat</h3>
+            <input type="text" id="rename-input" placeholder="Enter new name" class="w-full bg-[#131314] border border-[#444] rounded-xl p-3 mb-4 outline-none">
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeRenameModal()" class="px-4 py-2 text-gray-400">Cancel</button>
+                <button onclick="confirmRename()" class="px-4 py-2 bg-[#8b5cf6] text-white rounded-full">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="fixed inset-0 modal-overlay z-[90] hidden flex items-center justify-center">
+        <div class="bg-[#1e1f20] p-6 rounded-2xl w-full max-w-sm border border-[#333537] m-4">
+            <h3 class="text-lg font-medium mb-2">Delete Chat</h3>
+            <p class="text-gray-400 mb-4">This chat will be permanently deleted.</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 text-gray-400">Cancel</button>
+                <button onclick="confirmDelete()" class="px-4 py-2 bg-red-600 text-white rounded-full">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-[#1e1f20] transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 flex flex-col p-4 border-r border-[#333537]">
+        <button onclick="startNewChat()" class="flex items-center gap-3 px-6 py-4 bg-[#282a2c] hover:bg-[#37393b] rounded-2xl text-sm font-medium mb-6">
+            <span class="material-icons-round text-[#8b5cf6]">add</span>
+            New Chat
+        </button>
+        <div class="flex-1 overflow-y-auto space-y-1 mb-4" id="thread-list"></div>
+        <div class="border-t border-[#333537] pt-4 space-y-2">
+            <button onclick="openProfileModal()" class="flex items-center gap-3 w-full px-4 py-3 hover:bg-[#333537] rounded-xl text-sm text-gray-400 hover:text-white">
+                <span class="material-icons-round">person</span>
+                Profile
+            </button>
+            <button onclick="logout()" class="flex items-center gap-3 w-full px-4 py-3 hover:bg-[#333537] rounded-xl text-sm text-gray-400 hover:text-white">
+                <span class="material-icons-round">logout</span>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 relative">
+        <header class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 hover:bg-[#333537] rounded-full md:hidden">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                <h1 class="text-xl font-medium text-gray-200">Suro</h1>
+            </div>
+            <button onclick="openToolsModal()" class="p-2 hover:bg-[#333537] rounded-full" title="Tools">
+                <span class="material-icons-round">build</span>
+            </button>
+        </header>
+
+        <div id="chat-container" class="flex-1 overflow-y-auto px-4 md:px-[15%] py-6 space-y-8">
+            <div id="welcome-section">
+                <div class="flex gap-4 items-start">
+                    <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
+                        <span class="material-icons-round text-sm text-white">school</span>
+                    </div>
+                    <div class="prose max-w-none">
+                        <p>Hello! I'm your study companion Suro. Choose a mode to get started:</p>
+                    </div>
+                </div>
+                <div id="mode-buttons" class="flex flex-wrap gap-4 mt-6 ml-12">
+                    <button onclick="selectMode('study')" id="mode-study" class="mode-btn active flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#8b5cf6] transition-all">
+                        <span class="material-icons-round text-purple-400">menu_book</span>
+                        <div class="text-left">
+                            <div class="font-medium">Study Mode</div>
+                            <div class="text-xs text-gray-400">Learn concepts</div>
+                        </div>
+                    </button>
+                    <button onclick="selectMode('test')" id="mode-test" class="mode-btn flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#444] transition-all">
+                        <span class="material-icons-round text-blue-400">quiz</span>
+                        <div class="text-left">
+                            <div class="font-medium">Test Mode</div>
+                            <div class="text-xs text-gray-400">MCQs</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 md:px-[15%] pb-16">
+            <div class="max-w-4xl mx-auto">
+                <div id="active-tools" class="flex flex-wrap gap-2 mb-2 justify-center"></div>
+                <div id="uploaded-files-display" class="flex flex-wrap gap-2 mb-2 justify-center"></div>
+                <div id="tool-status" class="text-center text-purple-400 text-sm mb-2 hidden"></div>
+                <div class="bg-[#1e1f20] rounded-[32px] flex items-center px-4 py-2 border border-transparent focus-within:border-[#8b5cf6] shadow-lg">
+                    <input type="file" id="chat-pdf-upload" accept=".pdf" class="hidden" onchange="handleChatPDFUpload()">
+                    <button onclick="document.getElementById('chat-pdf-upload').click()" class="p-2 text-gray-400 hover:text-purple-400 hover:bg-[#333537] rounded-full" title="Upload PDF">
+                        <span class="material-icons-round">attach_file</span>
+                    </button>
+                    <input type="text" id="userInput" placeholder="Ask me anything..." class="flex-1 bg-transparent py-4 px-2 outline-none" onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button onclick="sendMessage()" class="p-2 text-[#8b5cf6] hover:bg-[#333537] rounded-full">
+                        <span class="material-icons-round">send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentThreadId = null;
+        let isLoginMode = true;
+        let currentUser = localStorage.getItem('study_user');
+        let chatMode = 'study';
+        let enabledTools = [];
+        let pendingDeleteId = null;
+        let pendingRenameId = null;
+        let hasStartedChat = false;
+        let uploadedFiles = [];
+
+        const STUDY_TOOLS = [
+            {id: 'voice', name: 'Voice', icon: 'mic'},
+            {id: 'flashcards', name: 'Flashcards', icon: 'style'},
+            {id: 'chart', name: 'Charts', icon: 'insights'}
+        ];
+        
+        const TEST_TOOLS = [
+            {id: 'mcqs', name: 'MCQs', icon: 'quiz'}
+        ];
+        
+        let currentTestAnswers = [];
+        let useStreaming = true;
+
+        function initializeTools() {
+            const tools = getAvailableTools();
+            enabledTools = tools.map(t => t.id);
+            updateActiveToolsDisplay();
+        }
+
+        if(currentUser) {
+            document.getElementById('auth-overlay').style.display = 'none';
+            loadThreads();
+            initializeTools();
+            loadUserFiles();
+        }
+
+        function selectMode(mode) {
+            chatMode = mode;
+            const tools = getAvailableTools();
+            enabledTools = tools.map(t => t.id);
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active', 'border-[#8b5cf6]'));
+            document.getElementById(`mode-${mode}`).classList.add('active', 'border-[#8b5cf6]');
+            updateActiveToolsDisplay();
+        }
+
+        function getAvailableTools() {
+            return chatMode === 'test' ? TEST_TOOLS : STUDY_TOOLS;
+        }
+
+        function openToolsModal() {
+            const tools = getAvailableTools();
+            const list = document.getElementById('tools-list');
+            list.innerHTML = tools.map(t => `
+                <button onclick="toggleTool('${t.id}')" id="tool-${t.id}" 
+                    class="tool-chip w-full flex items-center gap-3 p-3 rounded-xl border ${enabledTools.includes(t.id) ? 'border-[#8b5cf6] bg-[#8b5cf6]' : 'border-[#444]'} transition-all">
+                    <span class="material-icons-round">${t.icon}</span>
+                    <span>${t.name}</span>
+                    ${enabledTools.includes(t.id) ? '<span class="material-icons-round ml-auto text-sm">check</span>' : ''}
+                </button>
+            `).join('');
+            document.getElementById('tools-modal').classList.remove('hidden');
+        }
+
+        function closeToolsModal() {
+            document.getElementById('tools-modal').classList.add('hidden');
+        }
+
+        function toggleTool(id) {
+            if(enabledTools.includes(id)) {
+                enabledTools = enabledTools.filter(t => t !== id);
+            } else {
+                enabledTools.push(id);
+            }
+            openToolsModal();
+            updateActiveToolsDisplay();
+        }
+
+        function updateActiveToolsDisplay() {
+            const container = document.getElementById('active-tools');
+            if(enabledTools.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            const tools = getAvailableTools();
+            container.innerHTML = enabledTools.map(id => {
+                const tool = tools.find(t => t.id === id);
+                return tool ? `<span class="flex items-center gap-1 px-3 py-1 bg-[#8b5cf6]/20 text-purple-400 rounded-full text-xs">
+                    <span class="material-icons-round text-sm">${tool.icon}</span>${tool.name}
+                    <button onclick="removeTool('${id}')" class="ml-1 hover:text-white">&times;</button>
+                </span>` : '';
+            }).join('');
+        }
+
+        function removeTool(id) {
+            enabledTools = enabledTools.filter(t => t !== id);
+            updateActiveToolsDisplay();
+        }
+
+        async function loadUserFiles() {
+            const res = await fetch('/api/files', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: currentUser, thread_id: currentThreadId})
+            });
+            uploadedFiles = await res.json();
+            updateUploadedFilesDisplay();
+        }
+
+        function updateUploadedFilesDisplay() {
+            const container = document.getElementById('uploaded-files-display');
+            if(uploadedFiles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = uploadedFiles.slice(0, 5).map(f => `
+                <span class="flex items-center gap-1 px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs">
+                    <span class="material-icons-round text-sm">picture_as_pdf</span>${f.filename.substring(0, 15)}${f.filename.length > 15 ? '...' : ''}
+                    <button onclick="event.stopPropagation(); deleteFile(${f.id})" class="ml-1 hover:text-white">&times;</button>
+                </span>
+            `).join('');
+        }
+        
+        async function deleteFile(fileId) {
+            if(!confirm('Remove this PDF?')) return;
+            await fetch('/api/files/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({file_id: fileId})
+            });
+            loadUserFiles();
+        }
+
+        async function handleChatPDFUpload() {
+            const file = document.getElementById('chat-pdf-upload').files[0];
+            if(!file) return;
+            
+            const statusEl = document.getElementById('tool-status');
+            statusEl.textContent = 'Uploading PDF...';
+            statusEl.classList.remove('hidden');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('username', currentUser);
+            if(currentThreadId) formData.append('thread_id', currentThreadId);
+            
+            const res = await fetch('/api/upload', {method: 'POST', body: formData});
+            const data = await res.json();
+            
+            if(data.status === 'uploaded') {
+                statusEl.textContent = 'PDF uploaded! You can now ask questions about it.';
+                setTimeout(() => statusEl.classList.add('hidden'), 3000);
+                loadUserFiles();
+            } else {
+                statusEl.textContent = data.error || 'Upload failed';
+                setTimeout(() => statusEl.classList.add('hidden'), 3000);
+            }
+            
+            document.getElementById('chat-pdf-upload').value = '';
+        }
+
+        function openProfileModal() {
+            document.getElementById('profile-modal').classList.remove('hidden');
+            loadProfile();
+            showProfileTab('info');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        function showProfileTab(tab) {
+            ['info', 'calendar', 'usage'].forEach(t => {
+                document.getElementById(`profile-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('tab-active');
+                document.getElementById(`tab-${t}`).classList.add('text-gray-400');
+            });
+            document.getElementById(`profile-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
+            
+            if(tab === 'calendar') loadNotes();
+            if(tab === 'usage') loadUsage();
+        }
+
+        async function loadProfile() {
+            const res = await fetch('/api/profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: currentUser})
+            });
+            const data = await res.json();
+            document.getElementById('profile-name').value = data.display_name || '';
+            document.getElementById('profile-about').value = data.about || '';
+            document.getElementById('profile-strengths').value = data.strengths || '';
+            document.getElementById('profile-weaknesses').value = data.weaknesses || '';
+        }
+
+        async function saveProfile() {
+            const res = await fetch('/api/profile/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: currentUser,
+                    display_name: document.getElementById('profile-name').value,
+                    about: document.getElementById('profile-about').value,
+                    strengths: document.getElementById('profile-strengths').value,
+                    weaknesses: document.getElementById('profile-weaknesses').value
+                })
+            });
+            if(res.ok) {
+                alert('Profile saved!');
+            }
+        }
+
+        async function loadNotes() {
+            const res = await fetch('/api/notes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: currentUser})
+            });
+            const notes = await res.json();
+            document.getElementById('notes-list').innerHTML = notes.map(n => `
+                <div class="flex justify-between items-center bg-[#131314] p-3 rounded-xl">
+                    <div>
+                        <span class="text-purple-400 text-sm">${n.date}</span>
+                        <p class="text-sm">${n.text}</p>
+                    </div>
+                    <button onclick="deleteNote(${n.id})" class="text-red-400 hover:text-red-300">
+                        <span class="material-icons-round text-sm">delete</span>
+                    </button>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center py-4">No notes yet</p>';
+        }
+
+        async function addNote() {
+            const date = document.getElementById('note-date').value;
+            const text = document.getElementById('note-text').value;
+            if(!date || !text) return;
+            await fetch('/api/notes/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: currentUser, date, text})
+            });
+            document.getElementById('note-date').value = '';
+            document.getElementById('note-text').value = '';
+            loadNotes();
+        }
+
+        async function deleteNote(id) {
+            await fetch('/api/notes/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({note_id: id})
+            });
+            loadNotes();
+        }
+
+        async function loadUsage() {
+            const res = await fetch('/api/profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: currentUser})
+            });
+            const data = await res.json();
+            document.getElementById('total-tokens').textContent = (data.total_tokens || 0).toLocaleString();
+            document.getElementById('total-cost').textContent = '$' + (data.cost || 0).toFixed(4);
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? "Login to Study Guide" : "Create Account";
+        }
+
+        async function handleAuth() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: u, password: p})
+            });
+            const data = await res.json();
+            if(data.status === 'success') {
+                localStorage.setItem('study_user', u);
+                currentUser = u;
+                document.getElementById('auth-overlay').style.display = 'none';
+                loadThreads();
+                initializeTools();
+                loadUserFiles();
+            } else { alert(data.message); }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.toggle('hidden');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            if(!hasStartedChat) {
+                hasStartedChat = true;
+                document.getElementById('welcome-section')?.remove();
+            }
+
+            const container = document.getElementById('chat-container');
+            container.innerHTML += `<div class="flex justify-end"><div class="bg-[#2d2f31] px-5 py-3 rounded-3xl max-w-[85%]">${text}</div></div>`;
+            input.value = '';
+            
+            const statusEl = document.getElementById('tool-status');
+            statusEl.textContent = 'Thinking...';
+            statusEl.classList.remove('hidden');
+
+            currentTestAnswers = [];
+
+            
+            await sendRegularMessage(text, container, statusEl);
+            
+        }
+
+        async function sendRegularMessage(text, container, statusEl) {
+            const loadingId = 'loading-' + Date.now();
+            container.innerHTML += `<div id="${loadingId}" class="flex gap-4 items-start"><div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0"><span class="material-icons-round text-sm animate-spin">sync</span></div><div class="text-gray-400">Processing...</div></div>`;
+            container.scrollTop = container.scrollHeight;
+
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    message: text,
+                    thread_id: currentThreadId,
+                    username: currentUser,
+                    chat_mode: chatMode,
+                    enabled_tools: enabledTools,
+                    voice_style: 'female-english'
+                })
+            });
+            const data = await res.json();
+
+            document.getElementById(loadingId)?.remove();
+            statusEl.classList.add('hidden');
+
+            if(!currentThreadId) { 
+                currentThreadId = data.thread_id; 
+                loadThreads(); 
+                // Update uploaded files with the new thread ID
+                uploadedFiles.forEach(f => f.thread_id = currentThreadId);
+                // Also update the UI to reflect they are now attached to this thread
+                await loadUserFiles();
+            }
+
+            renderAIMessage(data, container);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        let testQuestionCounter = 0;
+        
+        function renderAIMessage(data, container) {
+            const msgId = 'msg-' + Date.now();
+            let html = `<div id="${msgId}" class="flex gap-4 items-start mb-8"><div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1"><span class="material-icons-round text-sm">school</span></div><div class="flex-1 min-w-0">`; // Added min-w-0 to parent for flex overflow
+            
+            // Parse Markdown
+            let rawHtml = marked.parse(data.response || '');
+            
+            // Wrap tables in a scrollable container automatically
+            const styledHtml = rawHtml.replace(/<table>/g, '<div class="table-container"><table>').replace(/<\/table>/g, '</table></div>');
+            
+            html += `<div class="prose max-w-none">${styledHtml}</div>`;
+            
+            let hasTestQuestions = false;
+            
+            if(data.flashcards?.length > 0) {
+                html += `<div class="mt-4"><h4 class="text-purple-400 font-medium mb-3">Flashcards</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
+                data.flashcards.forEach((card, i) => {
+                    html += `<div class="flashcard h-32" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-inner relative w-full h-full">
+                            <div class="flashcard-front bg-[#2d2f31] rounded-xl p-4 flex flex-col justify-center border border-[#444]">
+                                <span class="text-xs text-purple-400">Q${i+1}</span>
+                                <p class="text-sm">${card.question}</p>
+                            </div>
+                            <div class="flashcard-back bg-[#1e3a5f] rounded-xl p-4 flex flex-col justify-center border border-[#2563eb]">
+                                <span class="text-xs text-blue-400">Answer</span>
+                                <p class="text-sm">${card.answer}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+            
+            if(data.mcqs?.length > 0) {
+                hasTestQuestions = true;
+                html += `<div class="mt-4"><h4 class="text-blue-400 font-medium mb-3">Multiple Choice Questions</h4><div class="space-y-4" id="${msgId}-mcqs">`;
+                data.mcqs.forEach((mcq, i) => {
+                    const qId = `mcq-${msgId}-${i}`;
+                    html += `<div class="bg-[#2d2f31] rounded-xl p-4" data-question="${mcq.question}" data-answer="${mcq.answer}" data-type="mcq">
+                        <p class="font-medium mb-2">${i+1}. ${mcq.question}</p>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-[#3c3f41] cursor-pointer">
+                                <input type="radio" name="${qId}" value="a" class="mcq-input" onchange="selectMCQ(this, '${mcq.answer}')">
+                                <span class="w-6 h-6 rounded-full border border-[#444] flex items-center justify-center text-xs">A</span>
+                                <span>${mcq.a}</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-[#3c3f41] cursor-pointer">
+                                <input type="radio" name="${qId}" value="b" class="mcq-input" onchange="selectMCQ(this, '${mcq.answer}')">
+                                <span class="w-6 h-6 rounded-full border border-[#444] flex items-center justify-center text-xs">B</span>
+                                <span>${mcq.b}</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-[#3c3f41] cursor-pointer">
+                                <input type="radio" name="${qId}" value="c" class="mcq-input" onchange="selectMCQ(this, '${mcq.answer}')">
+                                <span class="w-6 h-6 rounded-full border border-[#444] flex items-center justify-center text-xs">C</span>
+                                <span>${mcq.c}</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-[#3c3f41] cursor-pointer">
+                                <input type="radio" name="${qId}" value="d" class="mcq-input" onchange="selectMCQ(this, '${mcq.answer}')">
+                                <span class="w-6 h-6 rounded-full border border-[#444] flex items-center justify-center text-xs">D</span>
+                                <span>${mcq.d}</span>
+                            </label>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+            
+            if(data.chart_image) {
+                html += `<div class="mt-4"><img src="${data.chart_image}" alt="Chart" class="max-w-full rounded-xl border border-[#444]" /></div>`;
+            }
+            
+            if(data.audio_url) {
+                html += `<div class="mt-4"><audio controls src="${data.audio_url}" class="w-full rounded-lg"></audio></div>`;
+            }
+            
+            if(hasTestQuestions) {
+                html += `<div class="mt-4 flex gap-3">
+                    <button onclick="submitTest('${msgId}')" class="px-6 py-3 bg-[#8b5cf6] text-white rounded-full hover:bg-purple-500 flex items-center gap-2">
+                        <span class="material-icons-round">check_circle</span>
+                        Submit Test
+                    </button>
+                </div>
+                <div id="${msgId}-results" class="mt-4 hidden"></div>`;
+            }
+            
+            if(data.tokens_used) {
+                html += `<p class="text-xs text-gray-500 mt-2">Tokens: ${data.tokens_used.toLocaleString()}</p>`;
+            }
+            
+                        html += `</div></div>`;
+            container.innerHTML += html;
+            
+            // Trigger Code Highlighting
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        }
+        
+        
+        function selectMCQ(input, correctAnswer) {
+            const container = input.closest('[data-type="mcq"]');
+            container.querySelectorAll('label').forEach(l => l.classList.remove('bg-[#3c3f41]'));
+            input.closest('label').classList.add('bg-[#3c3f41]');
+        }
+        
+        async function submitTest(msgId) {
+            const msgEl = document.getElementById(msgId);
+            const resultsEl = document.getElementById(`${msgId}-results`);
+            const answers = [];
+            
+            msgEl.querySelectorAll('[data-type="mcq"]').forEach(el => {
+                const selected = el.querySelector('input:checked');
+                answers.push({
+                    question: el.dataset.question,
+                    correct_answer: el.dataset.answer,
+                    user_answer: selected ? selected.value : '',
+                    type: 'mcq'
+                });
+            });
+            
+            if(answers.length === 0) {
+                alert('No questions to submit!');
+                return;
+            }
+            
+            resultsEl.innerHTML = '<p class="text-purple-400">Scoring your answers...</p>';
+            resultsEl.classList.remove('hidden');
+            
+            try {
+                const res = await fetch('/api/score-test', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: currentUser,
+                        answers: answers
+                    })
+                });
+                const data = await res.json();
+                
+                let resultHtml = `<div class="bg-[#1e3a5f] rounded-xl p-4 border border-[#2563eb]">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl font-bold ${data.score >= 70 ? 'text-green-400' : data.score >= 50 ? 'text-yellow-400' : 'text-red-400'}">${data.score}/100</span>
+                        <span class="text-gray-400">${data.score >= 70 ? 'Great job!' : data.score >= 50 ? 'Keep practicing!' : 'Review this topic!'}</span>
+                    </div>
+                    <p class="text-sm text-gray-300">${data.feedback || ''}</p>`;
+                
+                if(data.details && Array.isArray(data.details)) {
+                    resultHtml += '<div class="mt-3 space-y-2">';
+                    data.details.forEach((d, i) => {
+                        resultHtml += `<div class="flex items-center gap-2 text-sm">
+                            <span class="material-icons-round text-sm ${d.correct ? 'text-green-400' : 'text-red-400'}">${d.correct ? 'check_circle' : 'cancel'}</span>
+                            <span>Q${i+1}: ${d.comment || (d.correct ? 'Correct' : 'Incorrect')}</span>
+                        </div>`;
+                    });
+                    resultHtml += '</div>';
+                }
+                
+                if(data.tokens_used) {
+                    resultHtml += `<p class="text-xs text-gray-500 mt-2">Tokens used for scoring: ${data.tokens_used}</p>`;
+                }
+                
+                resultHtml += '</div>';
+                resultsEl.innerHTML = resultHtml;
+                
+            } catch(e) {
+                resultsEl.innerHTML = `<p class="text-red-400">Error scoring test: ${e.message}</p>`;
+            }
+        }
+
+        async function loadThreads() {
+            const res = await fetch('/api/threads', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: currentUser})
+            });
+            const threads = await res.json();
+            const list = document.getElementById('thread-list');
+            list.innerHTML = threads.map(t => `
+                <div class="relative flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-[#2d2f31] text-sm ${t.id === currentThreadId ? 'thread-active' : ''}">
+                    <span class="truncate pr-2 flex-1" onclick="selectThread('${t.id}')">${t.title}</span>
+                    <span class="text-xs text-gray-500 mr-2">${t.mode}</span>
+                    <div class="flex gap-1">
+                        <button class="p-1 hover:bg-[#444] rounded-full" onclick="event.stopPropagation(); openRenameModal('${t.id}')">
+                            <span class="material-icons-round text-sm">edit</span>
+                        </button>
+                        <button class="p-1 hover:bg-[#444] rounded-full text-red-400" onclick="event.stopPropagation(); openDeleteModal('${t.id}')">
+                            <span class="material-icons-round text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openRenameModal(id) { pendingRenameId = id; document.getElementById('rename-modal').classList.remove('hidden'); }
+        function closeRenameModal() { document.getElementById('rename-modal').classList.add('hidden'); }
+        async function confirmRename() {
+            const name = document.getElementById('rename-input').value.trim();
+            if(!name) return;
+            await fetch('/api/threads/rename', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({thread_id: pendingRenameId, new_title: name})});
+            closeRenameModal(); loadThreads();
+        }
+
+        function openDeleteModal(id) { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); }
+        function closeDeleteModal() { document.getElementById('delete-modal').classList.add('hidden'); }
+        async function confirmDelete() {
+            await fetch('/api/threads/delete', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({thread_id: pendingDeleteId})});
+            if(currentThreadId === pendingDeleteId) startNewChat();
+            closeDeleteModal(); loadThreads();
+        }
+
+        async function selectThread(id) {
+            currentThreadId = id;
+            hasStartedChat = true;
+            if(window.innerWidth < 768) toggleSidebar();
+            loadThreads();
+            await loadUserFiles(); // Load files for this specific thread before rendering
+            const container = document.getElementById('chat-container');
+            container.innerHTML = '<div class="text-center text-gray-500 py-10">Loading...</div>';
+            const res = await fetch('/api/history', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({thread_id: id})});
+            const history = await res.json();
+            container.innerHTML = '';
+            history.forEach(msg => {
+                if(msg.role === 'user') {
+                    container.innerHTML += `<div class="flex justify-end"><div class="bg-[#2d2f31] px-5 py-3 rounded-3xl max-w-[85%]">${msg.content}</div></div>`;
+                } else {
+                    renderAIMessage({response: msg.content, flashcards: msg.flashcards, mcqs: msg.mcqs, audio_url: msg.audio_url, chart_image: msg.chart_image}, container);
+                }
+            });
+            updateUploadedFilesDisplay(); // Ensure display is updated
+        }
+
+        function startNewChat() {
+            currentThreadId = null;
+            hasStartedChat = false;
+            chatMode = 'study';
+            initializeTools();
+            uploadedFiles = [];
+            updateUploadedFilesDisplay();
+            document.getElementById('chat-container').innerHTML = `
+                <div id="welcome-section">
+                    <div class="flex gap-4 items-start">
+                        <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
+                            <span class="material-icons-round text-sm text-white">school</span>
+                        </div>
+                        <div class="prose max-w-none">
+                            <p>Hello! I'm your study companion suro. Choose a mode to get started:</p>
+                        </div>
+                    </div>
+                    <div id="mode-buttons" class="flex flex-wrap gap-4 mt-6 ml-12">
+                        <button onclick="selectMode('study')" id="mode-study" class="mode-btn active flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#8b5cf6] transition-all">
+                            <span class="material-icons-round text-purple-400">menu_book</span>
+                            <div class="text-left">
+                                <div class="font-medium">Study Mode</div>
+                                <div class="text-xs text-gray-400">Learn concepts</div>
+                            </div>
+                        </button>
+                        <button onclick="selectMode('test')" id="mode-test" class="mode-btn flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#444] transition-all">
+                            <span class="material-icons-round text-blue-400">quiz</span>
+                            <div class="text-left">
+                                <div class="font-medium">Test Mode</div>
+                                <div class="text-xs text-gray-400">MCQs</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>`;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active', 'border-[#8b5cf6]'));
+            document.getElementById('mode-study')?.classList.add('active', 'border-[#8b5cf6]');
+            loadThreads();
+        }
+
+        function logout() { localStorage.removeItem('study_user'); location.reload(); }
+    </script>
+</body>
+</html>
