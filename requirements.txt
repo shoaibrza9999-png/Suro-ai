@@ -1,0 +1,5 @@
+flask
+werkzeug
+langchain-core
+edge_tts
+gunicorn
