@@ -234,28 +234,31 @@
         </header>
 
         <div id="chat-container" class="flex-1 overflow-y-auto px-4 md:px-[15%] py-6 space-y-8">
-            <div id="welcome-section">
-                <div class="flex gap-4 items-start">
-                    <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
-                        <span class="material-icons-round text-sm text-white">school</span>
-                    </div>
-                    <div class="prose max-w-none">
-                        <p>Hello! I'm your study companion Suro. Choose a mode to get started:</p>
-                    </div>
+            <div id="welcome-section" class="flex flex-col items-center justify-center h-full space-y-8 animate-fade-in mt-10">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.3)]">
+                    <span class="material-icons-round text-4xl text-white">school</span>
                 </div>
-                <div id="mode-buttons" class="flex flex-wrap gap-4 mt-6 ml-12">
-                    <button onclick="selectMode('study')" id="mode-study" class="mode-btn active flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#8b5cf6] transition-all">
-                        <span class="material-icons-round text-purple-400">menu_book</span>
+                <div class="text-center space-y-2">
+                    <h2 class="text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">Hello! I'm Suro</h2>
+                    <p class="text-gray-400 text-lg">Your AI study companion. Choose a mode to get started:</p>
+                </div>
+                <div id="mode-buttons" class="flex flex-wrap justify-center gap-6 mt-6">
+                    <button onclick="selectMode('study')" id="mode-study" class="mode-btn active group flex items-center gap-4 px-8 py-5 bg-[#1e1f20] hover:bg-[#2d2f31] rounded-3xl border border-[#8b5cf6] shadow-[0_0_15px_rgba(139,92,246,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="p-3 bg-purple-500/10 rounded-2xl group-hover:bg-purple-500/20 transition-colors">
+                            <span class="material-icons-round text-purple-400 text-2xl">menu_book</span>
+                        </div>
                         <div class="text-left">
-                            <div class="font-medium">Study Mode</div>
-                            <div class="text-xs text-gray-400">Learn concepts</div>
+                            <div class="font-medium text-lg">Study Mode</div>
+                            <div class="text-sm text-gray-400">Learn concepts</div>
                         </div>
                     </button>
-                    <button onclick="selectMode('test')" id="mode-test" class="mode-btn flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#444] transition-all">
-                        <span class="material-icons-round text-blue-400">quiz</span>
+                    <button onclick="selectMode('test')" id="mode-test" class="mode-btn group flex items-center gap-4 px-8 py-5 bg-[#1e1f20] hover:bg-[#2d2f31] rounded-3xl border border-[#444] hover:border-[#60a5fa] hover:shadow-[0_0_15px_rgba(96,165,250,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="p-3 bg-blue-500/10 rounded-2xl group-hover:bg-blue-500/20 transition-colors">
+                            <span class="material-icons-round text-blue-400 text-2xl">quiz</span>
+                        </div>
                         <div class="text-left">
-                            <div class="font-medium">Test Mode</div>
-                            <div class="text-xs text-gray-400">MCQs</div>
+                            <div class="font-medium text-lg">Test Mode</div>
+                            <div class="text-sm text-gray-400">Practice MCQs</div>
                         </div>
                     </button>
                 </div>
@@ -267,15 +270,20 @@
                 <div id="active-tools" class="flex flex-wrap gap-2 mb-2 justify-center"></div>
                 <div id="uploaded-files-display" class="flex flex-wrap gap-2 mb-2 justify-center"></div>
                 <div id="tool-status" class="text-center text-purple-400 text-sm mb-2 hidden"></div>
-                <div class="bg-[#1e1f20] rounded-[32px] flex items-center px-4 py-2 border border-transparent focus-within:border-[#8b5cf6] shadow-lg">
+                <div class="bg-[#1e1f20] rounded-3xl flex items-end px-4 py-3 border border-[#333537] focus-within:border-[#8b5cf6] shadow-lg transition-colors">
                     <input type="file" id="chat-pdf-upload" accept=".pdf" class="hidden" onchange="handleChatPDFUpload()">
-                    <button onclick="document.getElementById('chat-pdf-upload').click()" class="p-2 text-gray-400 hover:text-purple-400 hover:bg-[#333537] rounded-full" title="Upload PDF">
+                    <button onclick="document.getElementById('chat-pdf-upload').click()" class="p-2 text-gray-400 hover:text-purple-400 hover:bg-[#333537] rounded-full shrink-0 transition-colors" title="Upload PDF">
                         <span class="material-icons-round">attach_file</span>
                     </button>
-                    <input type="text" id="userInput" placeholder="Ask me anything..." class="flex-1 bg-transparent py-4 px-2 outline-none" onkeypress="if(event.key === 'Enter') sendMessage()">
-                    <button onclick="sendMessage()" class="p-2 text-[#8b5cf6] hover:bg-[#333537] rounded-full">
-                        <span class="material-icons-round">send</span>
-                    </button>
+                    <textarea id="userInput" placeholder="Ask me anything..." class="flex-1 bg-transparent py-2 px-3 outline-none resize-none max-h-32 text-gray-200" rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"></textarea>
+                    <div class="flex gap-1 shrink-0">
+                        <button id="speech-btn" onclick="toggleSpeechRecognition()" class="p-2 text-gray-400 hover:text-blue-400 hover:bg-[#333537] rounded-full transition-colors" title="Voice Input">
+                            <span class="material-icons-round" id="speech-icon">mic</span>
+                        </button>
+                        <button onclick="sendMessage()" class="p-2 text-[#8b5cf6] hover:bg-[#8b5cf6]/20 rounded-full transition-colors">
+                            <span class="material-icons-round">send</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -591,7 +599,7 @@
             }
 
             const container = document.getElementById('chat-container');
-            container.innerHTML += `<div class="flex justify-end"><div class="bg-[#2d2f31] px-5 py-3 rounded-3xl max-w-[85%]">${text}</div></div>`;
+            container.innerHTML += `<div class="flex justify-end mb-6"><div class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 rounded-3xl rounded-tr-sm max-w-[85%] text-white shadow-md leading-relaxed whitespace-pre-wrap">${text}</div></div>`;
             input.value = '';
             
             const statusEl = document.getElementById('tool-status');
@@ -644,7 +652,17 @@
         
         function renderAIMessage(data, container) {
             const msgId = 'msg-' + Date.now();
-            let html = `<div id="${msgId}" class="flex gap-4 items-start mb-8"><div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0 mt-1"><span class="material-icons-round text-sm">school</span></div><div class="flex-1 min-w-0">`; // Added min-w-0 to parent for flex overflow
+            // Start AI message wrapper and copy button container
+            let html = `<div id="${msgId}" class="flex gap-4 items-start mb-8 group">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shrink-0 mt-1 shadow-md">
+                                <span class="material-icons-round text-sm text-white">school</span>
+                            </div>
+                            <div class="flex-1 min-w-0 bg-[#1e1f20] rounded-2xl p-5 border border-[#333537] shadow-sm relative transition-all duration-300 hover:border-[#444]">
+                                <!-- Copy Button -->
+                                <button onclick="copyToClipboard('${msgId}', this)" class="absolute top-3 right-3 p-1.5 text-gray-500 hover:text-white bg-[#2d2f31] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 focus:outline-none" title="Copy to clipboard">
+                                    <span class="material-icons-round text-sm" style="font-size: 16px;">content_copy</span>
+                                </button>
+            `;
             
             // Parse Markdown
             let rawHtml = marked.parse(data.response || '');
@@ -652,7 +670,7 @@
             // Wrap tables in a scrollable container automatically
             const styledHtml = rawHtml.replace(/<table>/g, '<div class="table-container"><table>').replace(/<\/table>/g, '</table></div>');
             
-            html += `<div class="prose max-w-none">${styledHtml}</div>`;
+            html += `<div class="prose max-w-none message-content">${styledHtml}</div>`;
             
             let hasTestQuestions = false;
             
@@ -865,7 +883,7 @@
             container.innerHTML = '';
             history.forEach(msg => {
                 if(msg.role === 'user') {
-                    container.innerHTML += `<div class="flex justify-end"><div class="bg-[#2d2f31] px-5 py-3 rounded-3xl max-w-[85%]">${msg.content}</div></div>`;
+                    container.innerHTML += `<div class="flex justify-end mb-6"><div class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 rounded-3xl rounded-tr-sm max-w-[85%] text-white shadow-md leading-relaxed whitespace-pre-wrap">${msg.content}</div></div>`;
                 } else {
                     renderAIMessage({response: msg.content, flashcards: msg.flashcards, mcqs: msg.mcqs, audio_url: msg.audio_url, chart_image: msg.chart_image}, container);
                 }
@@ -881,38 +899,135 @@
             uploadedFiles = [];
             updateUploadedFilesDisplay();
             document.getElementById('chat-container').innerHTML = `
-                <div id="welcome-section">
-                    <div class="flex gap-4 items-start">
-                        <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
-                            <span class="material-icons-round text-sm text-white">school</span>
+                <div id="welcome-section" class="flex flex-col items-center justify-center h-full space-y-8 animate-fade-in mt-10">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.3)]">
+                    <span class="material-icons-round text-4xl text-white">school</span>
+                </div>
+                <div class="text-center space-y-2">
+                    <h2 class="text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">Hello! I'm Suro</h2>
+                    <p class="text-gray-400 text-lg">Your AI study companion. Choose a mode to get started:</p>
+                </div>
+                <div id="mode-buttons" class="flex flex-wrap justify-center gap-6 mt-6">
+                    <button onclick="selectMode('study')" id="mode-study" class="mode-btn active group flex items-center gap-4 px-8 py-5 bg-[#1e1f20] hover:bg-[#2d2f31] rounded-3xl border border-[#8b5cf6] shadow-[0_0_15px_rgba(139,92,246,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="p-3 bg-purple-500/10 rounded-2xl group-hover:bg-purple-500/20 transition-colors">
+                            <span class="material-icons-round text-purple-400 text-2xl">menu_book</span>
                         </div>
-                        <div class="prose max-w-none">
-                            <p>Hello! I'm your study companion suro. Choose a mode to get started:</p>
+                        <div class="text-left">
+                            <div class="font-medium text-lg">Study Mode</div>
+                            <div class="text-sm text-gray-400">Learn concepts</div>
                         </div>
-                    </div>
-                    <div id="mode-buttons" class="flex flex-wrap gap-4 mt-6 ml-12">
-                        <button onclick="selectMode('study')" id="mode-study" class="mode-btn active flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#8b5cf6] transition-all">
-                            <span class="material-icons-round text-purple-400">menu_book</span>
-                            <div class="text-left">
-                                <div class="font-medium">Study Mode</div>
-                                <div class="text-xs text-gray-400">Learn concepts</div>
-                            </div>
-                        </button>
-                        <button onclick="selectMode('test')" id="mode-test" class="mode-btn flex items-center gap-2 px-6 py-4 bg-[#2d2f31] rounded-2xl border border-[#444] transition-all">
-                            <span class="material-icons-round text-blue-400">quiz</span>
-                            <div class="text-left">
-                                <div class="font-medium">Test Mode</div>
-                                <div class="text-xs text-gray-400">MCQs</div>
-                            </div>
-                        </button>
-                    </div>
-                </div>`;
+                    </button>
+                    <button onclick="selectMode('test')" id="mode-test" class="mode-btn group flex items-center gap-4 px-8 py-5 bg-[#1e1f20] hover:bg-[#2d2f31] rounded-3xl border border-[#444] hover:border-[#60a5fa] hover:shadow-[0_0_15px_rgba(96,165,250,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="p-3 bg-blue-500/10 rounded-2xl group-hover:bg-blue-500/20 transition-colors">
+                            <span class="material-icons-round text-blue-400 text-2xl">quiz</span>
+                        </div>
+                        <div class="text-left">
+                            <div class="font-medium text-lg">Test Mode</div>
+                            <div class="text-sm text-gray-400">Practice MCQs</div>
+                        </div>
+                    </button>
+                </div>
+            </div>`;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active', 'border-[#8b5cf6]'));
             document.getElementById('mode-study')?.classList.add('active', 'border-[#8b5cf6]');
             loadThreads();
         }
 
         function logout() { localStorage.removeItem('study_user'); location.reload(); }
+
+        // Speech Recognition Setup
+        let recognition = null;
+        let isRecording = false;
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                isRecording = true;
+                const icon = document.getElementById('speech-icon');
+                if(icon) {
+                    icon.classList.add('text-red-500', 'animate-pulse');
+                    icon.textContent = 'mic_off';
+                }
+            };
+
+            recognition.onresult = function(event) {
+                const text = event.results[0][0].transcript;
+                const input = document.getElementById('userInput');
+                if (input.value) {
+                    input.value += ' ' + text;
+                } else {
+                    input.value = text;
+                }
+                // trigger auto-resize
+                input.style.height = '';
+                input.style.height = input.scrollHeight + 'px';
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                stopRecording();
+            };
+
+            recognition.onend = function() {
+                stopRecording();
+            };
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                alert('Speech recognition is not supported in this browser.');
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error("Could not start recognition", e);
+                }
+            }
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            const icon = document.getElementById('speech-icon');
+            if(icon) {
+                icon.classList.remove('text-red-500', 'animate-pulse');
+                icon.textContent = 'mic';
+            }
+        }
+
+        // Copy to clipboard function
+        function copyToClipboard(msgId, btnEl) {
+            const msgContainer = document.getElementById(msgId);
+            if (!msgContainer) return;
+
+            const contentEl = msgContainer.querySelector('.message-content');
+            if (!contentEl) return;
+
+            const textToCopy = contentEl.innerText || contentEl.textContent;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Visual feedback
+                const icon = btnEl.querySelector('.material-icons-round');
+                const originalIcon = icon.textContent;
+
+                icon.textContent = 'check';
+                icon.classList.add('text-green-400');
+
+                setTimeout(() => {
+                    icon.textContent = originalIcon;
+                    icon.classList.remove('text-green-400');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
     </script>
 </body>
 </html>
