@@ -1,0 +1,12 @@
+flask
+werkzeug
+langchain-core
+edge_tts
+gunicorn
+langchain-groq
+langgraph
+langgraph-checkpoint-sqlite
+pydantic
+langchain
+requests
+PyMuPDF
